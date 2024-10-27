@@ -1,31 +1,24 @@
-import WebSocket from "ws";
 import { Action, ParsedMessage } from "./types";
-import {
-  incomingMessageHandler,
-  outgoingMessageHandler,
-} from "./message-handler";
+import { incomingMessageLogger, outgoingMessageLogger } from "./message-logger";
+import { WebSocketWithUuid } from "../http_server";
+import { addNewUser } from "./user";
 
-export const mainHandler = (ws: WebSocket, message: string) => {
+export const mainHandler = (ws: WebSocketWithUuid, message: string) => {
   const parsedMessage = JSON.parse(message);
-  incomingMessageHandler(JSON.stringify(parsedMessage));
+  incomingMessageLogger(ws.uuid, JSON.stringify(parsedMessage));
+
   const { type, data }: ParsedMessage = parsedMessage;
 
   const parsedData = JSON.parse(data);
 
   if (type === Action.REGISTRATION) {
-    const response = JSON.stringify({
-      type: Action.REGISTRATION,
-      data: JSON.stringify({
-        name: parsedData.name,
-        index: 0,
-        error: false,
-        errorText: "",
-      }),
-      id: 0,
+    const response = addNewUser({
+      id: ws.uuid,
+      name: parsedData.name,
+      password: parsedData.password,
     });
 
-    outgoingMessageHandler(response);
-
+    outgoingMessageLogger(response);
     ws.send(response);
   }
 

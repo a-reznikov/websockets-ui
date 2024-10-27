@@ -20,10 +20,16 @@ export const httpServer = http.createServer(function (req, res) {
   });
 });
 
+export interface WebSocketWithUuid extends WebSocket {
+  uuid: string;
+}
+
 export const wss = new WebSocketServer({ port: 3000 });
 console.log(`Start Websocket Server on the 3000 port!`);
 
-wss.on("connection", (ws: WebSocket) => {
+wss.on("connection", (ws: WebSocketWithUuid) => {
+  ws.uuid = global.crypto.randomUUID();
+
   ws.on("error", console.error);
 
   ws.on("message", (message: string) => mainHandler(ws, message));
