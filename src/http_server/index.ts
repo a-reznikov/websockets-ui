@@ -3,6 +3,7 @@ import * as path from "path";
 import * as http from "http";
 
 import WebSocket, { WebSocketServer } from "ws";
+import { mainHandler } from "../services/main-handler";
 
 export const httpServer = http.createServer(function (req, res) {
   const __dirname = path.resolve(path.dirname(""));
@@ -19,17 +20,11 @@ export const httpServer = http.createServer(function (req, res) {
   });
 });
 
-export interface WebSocketWithID extends WebSocket {
-  id?: number;
-}
+export const wss = new WebSocketServer({ port: 3000 });
+console.log(`Start Websocket Server on the 3000 port!`);
 
-const wss = new WebSocketServer({ port: 3000 });
-
-wss.on("connection", (ws: WebSocketWithID) => {
-  ws.id = Math.floor(Math.random() * 100) + 1;
+wss.on("connection", (ws: WebSocket) => {
   ws.on("error", console.error);
 
-  console.log("WS with id", ws.id);
-
-  ws.on("message", (data: string) => console.log("Data", data));
+  ws.on("message", (message: string) => mainHandler(ws, message));
 });
