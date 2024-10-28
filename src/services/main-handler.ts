@@ -2,10 +2,10 @@ import { Action, ParsedMessage } from "./types";
 import { incomingMessageLogger, messageSender } from "./messages";
 import { WebSocketWithUser, wss } from "../http_server";
 import { signUpUser } from "./user";
-import { addUserToWinners, updateWinners } from "./winners";
+import { addUserToWinners } from "./winners";
 import { addUserToRoom, createRoom, getAvailableRooms } from "./room";
 import { db } from "../db";
-import { createGame } from "./game";
+import { addShipToBoard, createGame } from "./game";
 
 type Props = {
   ws: WebSocketWithUser;
@@ -55,18 +55,23 @@ export const mainHandler = ({
     });
 
     if (updatedRoom) {
-      const idGame = global.crypto.randomUUID();
-
       wss.clients.forEach((client: WebSocketWithUser) => {
         if (
           client.currentUserName &&
           db.isUserInRoom(updatedRoom.roomUsers, client.currentUserName)
         ) {
-          const createdGame = createGame(idGame, client.currentUserName);
+          const createdGame = createGame(
+            updatedRoom.roomId,
+            client.currentUserName
+          );
           messageSender(client, createdGame);
         }
       });
     }
+  }
+
+  if (type === Action.ADD_SHIPS) {
+    messageSender(ws, addShipToBoard(data));
   }
 
   return;
