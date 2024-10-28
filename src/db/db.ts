@@ -1,8 +1,9 @@
-import { Room, RoomUser, User, UserWithIndex, Winner } from "./types";
+import { Game, Room, RoomUser, User, UserWithIndex, Winner } from "./types";
 
 export const users: UserWithIndex[] = [];
 export const winners: Winner[] = [];
 export const rooms: Room[] = [];
+export const games: Game[] = [];
 
 export const isUserExists = (userName: string) =>
   users.some(({ name }) => name === userName);
@@ -87,5 +88,16 @@ export const addUserToRoom = (indexRoom: string, currentUserName: string) => {
     });
   }
 
-  return joinedUser;
+  const updatedRoom = getRoomById(indexRoom);
+
+  return updatedRoom;
+};
+
+// Game
+export const createGame = (idGame: string, idPlayer: string) => {
+  const game: Game = { idGame, idPlayer };
+
+  games.push(game);
+
+  return game;
 };

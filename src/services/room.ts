@@ -10,8 +10,6 @@ export const createRoom = (currentUserName: string) => {
 export const getAvailableRooms = () => {
   const availableRooms = db.getAvailableRooms();
 
-  console.log(availableRooms);
-
   return JSON.stringify({
     type: Action.UPDATE_ROOM,
     data: JSON.stringify(availableRooms),
@@ -22,7 +20,7 @@ export const getAvailableRooms = () => {
 export const addUserToRoom = (data: string, currentUserName: string) => {
   const { indexRoom }: { indexRoom: string } = JSON.parse(data);
 
-  const joinedUser = db.addUserToRoom(indexRoom, currentUserName);
+  const updatedRoom = db.addUserToRoom(indexRoom, currentUserName);
 
-  return joinedUser;
+  return updatedRoom;
 };

@@ -21,3 +21,8 @@ export type Room = {
   roomId: string;
   roomUsers: RoomUser[];
 };
+
+export type Game = {
+  idGame: string;
+  idPlayer: string;
+};

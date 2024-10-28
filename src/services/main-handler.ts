@@ -1,13 +1,14 @@
-import { WebSocket } from "ws";
 import { Action, ParsedMessage } from "./types";
 import { incomingMessageLogger, messageSender } from "./messages";
-import { wss } from "../http_server";
+import { WebSocketWithUser, wss } from "../http_server";
 import { signUpUser } from "./user";
 import { addUserToWinners, updateWinners } from "./winners";
 import { addUserToRoom, createRoom, getAvailableRooms } from "./room";
+import { db } from "../db";
+import { createGame } from "./game";
 
 type Props = {
-  ws: WebSocket;
+  ws: WebSocketWithUser;
   message: string;
   currentUserName: string;
   setUserName: (userName: string) => void;
@@ -46,12 +47,26 @@ export const mainHandler = ({
   }
 
   if (type === Action.ADD_USER_TO_ROOM) {
-    addUserToRoom(data, currentUserName);
+    const updatedRoom = addUserToRoom(data, currentUserName);
 
     const availableRooms = getAvailableRooms();
     wss.clients.forEach((client) => {
       messageSender(client, availableRooms);
     });
+
+    if (updatedRoom) {
+      const idGame = global.crypto.randomUUID();
+
+      wss.clients.forEach((client: WebSocketWithUser) => {
+        if (
+          client.currentUserName &&
+          db.isUserInRoom(updatedRoom.roomUsers, client.currentUserName)
+        ) {
+          const createdGame = createGame(idGame, client.currentUserName);
+          messageSender(client, createdGame);
+        }
+      });
+    }
   }
 
   return;

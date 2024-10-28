@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as http from "http";
 
-import { WebSocketServer } from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 import { mainHandler } from "../services/main-handler";
 
 export const httpServer = http.createServer(function (req, res) {
@@ -20,14 +20,20 @@ export const httpServer = http.createServer(function (req, res) {
   });
 });
 
+export interface WebSocketWithUser extends WebSocket {
+  currentUserName?: string;
+}
+
 export const wss = new WebSocketServer({ port: 3000 });
 console.log(`Start Websocket Server on the 3000 port!`);
 
-wss.on("connection", (ws) => {
+wss.on("connection", (ws: WebSocketWithUser) => {
   let currentUserName = "Guest";
 
   const setUserName = (userName: string) => {
     currentUserName = userName;
+
+    ws.currentUserName = userName;
   };
 
   ws.on("error", console.error);
