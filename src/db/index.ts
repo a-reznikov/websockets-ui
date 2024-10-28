@@ -1,4 +1,4 @@
 import * as db from "./db";
-import type { User } from "./types";
+import type { User, UserWithIndex } from "./types";
 
-export { db, User };
+export { db, User, UserWithIndex };

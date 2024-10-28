@@ -1,32 +1,49 @@
+import { WebSocket } from "ws";
 import { Action, ParsedMessage } from "./types";
-import { incomingMessageLogger, outgoingMessageLogger } from "./messages";
-import { WebSocketWithUuid, wss } from "../http_server";
-import { addNewUser } from "./user";
-import { updateWinners } from "./winners";
+import { incomingMessageLogger, messageSender } from "./messages";
+import { wss } from "../http_server";
+import { signUpUser } from "./user";
+import { addUserToWinners, updateWinners } from "./winners";
+import { createRoom, getAvailableRooms } from "./room";
 
-export const mainHandler = (ws: WebSocketWithUuid, message: string) => {
+export const mainHandler = (userId: string, ws: WebSocket, message: string) => {
   const parsedMessage = JSON.parse(message);
-  incomingMessageLogger(ws.uuid, JSON.stringify(parsedMessage));
+  incomingMessageLogger(userId, JSON.stringify(parsedMessage));
 
   const { type, data }: ParsedMessage = parsedMessage;
 
-  const parsedData = JSON.parse(data);
-
   if (type === Action.REGISTRATION) {
-    const addedUser = addNewUser({
-      id: ws.uuid,
-      name: parsedData.name,
-      password: parsedData.password,
-    });
+    const signedUpUser = signUpUser(data);
 
-    outgoingMessageLogger(addedUser);
-    ws.send(addedUser);
+    messageSender(ws, signedUpUser);
 
-    const updatedWinners = updateWinners(parsedData.name);
+    const addedToWinners = addUserToWinners(data);
+    const availableRooms = getAvailableRooms();
 
     wss.clients.forEach((client) => {
-      outgoingMessageLogger(updatedWinners);
-      client.send(updatedWinners);
+      messageSender(client, addedToWinners);
+      messageSender(client, availableRooms);
+    });
+  }
+
+  if (type === Action.CREATE_ROOM) {
+    const room = createRoom(userId);
+
+    // const userToRoom = JSON.stringify({
+    //   type: Action.ADD_USER_TO_ROOM,
+    //   data: JSON.stringify({
+    //     indexRoom: room.roomId,
+    //   }),
+    //   id: 0,
+    // });
+
+    // messageSender(ws, userToRoom);
+    // ws.send(userToRoom);
+
+    const availableRooms = getAvailableRooms();
+
+    wss.clients.forEach((client) => {
+      messageSender(client, availableRooms);
     });
   }
 

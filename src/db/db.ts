@@ -1,19 +1,21 @@
-import { User, Winner } from "./types";
+import { Room, User, UserWithIndex, Winner } from "./types";
 
-export const users: User[] = [];
+export const users: UserWithIndex[] = [];
 export const winners: Winner[] = [];
-
-export const getUserById = (userId: string) =>
-  users.find(({ id }) => id === userId);
+export const rooms: Room[] = [];
 
 export const isUserExists = (userName: string) =>
   users.some(({ name }) => name === userName);
 
-export const addUser = (newUser: User) => {
-  const userIndex = users.length;
-  users.push(newUser);
+export const getUserByName = (userName: string) =>
+  users.find(({ name }) => name === userName);
 
-  return { name: newUser.name, index: userIndex };
+export const addUser = (newUser: User) => {
+  const createdUser: UserWithIndex = { ...newUser, index: users.length };
+
+  users.push(createdUser);
+
+  return createdUser;
 };
 
 // Winners
@@ -39,4 +41,21 @@ export const updateWinner = (userName: string) => {
   });
 
   return winners;
+};
+
+// Room
+export const getRoomById = (id: string) =>
+  rooms.find(({ roomId }) => roomId === id);
+
+export const getAvailableRooms = () =>
+  rooms.map(({ roomUsers }) => roomUsers.length === 1);
+
+export const createRoom = (userId: string) => {
+  const roomId = global.crypto.randomUUID();
+
+  const room: Room = { roomId, roomUsers: [] };
+
+  rooms.push(room);
+
+  return room;
 };
