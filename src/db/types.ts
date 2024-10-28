@@ -3,3 +3,8 @@ export type User = {
   name: string;
   password: string;
 };
+
+export type Winner = {
+  name: string;
+  wins: number;
+};

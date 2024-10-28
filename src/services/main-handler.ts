@@ -1,7 +1,8 @@
 import { Action, ParsedMessage } from "./types";
-import { incomingMessageLogger, outgoingMessageLogger } from "./message-logger";
-import { WebSocketWithUuid } from "../http_server";
+import { incomingMessageLogger, outgoingMessageLogger } from "./messages";
+import { WebSocketWithUuid, wss } from "../http_server";
 import { addNewUser } from "./user";
+import { updateWinners } from "./winners";
 
 export const mainHandler = (ws: WebSocketWithUuid, message: string) => {
   const parsedMessage = JSON.parse(message);
@@ -12,14 +13,21 @@ export const mainHandler = (ws: WebSocketWithUuid, message: string) => {
   const parsedData = JSON.parse(data);
 
   if (type === Action.REGISTRATION) {
-    const response = addNewUser({
+    const addedUser = addNewUser({
       id: ws.uuid,
       name: parsedData.name,
       password: parsedData.password,
     });
 
-    outgoingMessageLogger(response);
-    ws.send(response);
+    outgoingMessageLogger(addedUser);
+    ws.send(addedUser);
+
+    const updatedWinners = updateWinners(parsedData.name);
+
+    wss.clients.forEach((client) => {
+      outgoingMessageLogger(updatedWinners);
+      client.send(updatedWinners);
+    });
   }
 
   return "";
