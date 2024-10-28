@@ -4,7 +4,7 @@ import { incomingMessageLogger, messageSender } from "./messages";
 import { wss } from "../http_server";
 import { signUpUser } from "./user";
 import { addUserToWinners, updateWinners } from "./winners";
-import { createRoom, getAvailableRooms } from "./room";
+import { addUserToRoom, createRoom, getAvailableRooms } from "./room";
 
 type Props = {
   ws: WebSocket;
@@ -26,14 +26,10 @@ export const mainHandler = ({
 
   if (type === Action.REGISTRATION) {
     const signedUpUser = signUpUser(data, setUserName);
-
-    console.log(signedUpUser);
-
     messageSender(ws, signedUpUser);
 
     const addedToWinners = addUserToWinners(data);
     const availableRooms = getAvailableRooms();
-
     wss.clients.forEach((client) => {
       messageSender(client, availableRooms);
       messageSender(client, addedToWinners);
@@ -41,34 +37,21 @@ export const mainHandler = ({
   }
 
   if (type === Action.CREATE_ROOM) {
-    const room = createRoom(currentUserName);
-
-    const userToRoom = JSON.stringify({
-      type: Action.ADD_USER_TO_ROOM,
-      data: JSON.stringify({
-        indexRoom: room.roomId,
-      }),
-      id: 0,
-    });
-
-    messageSender(ws, userToRoom);
+    createRoom(currentUserName);
 
     const availableRooms = getAvailableRooms();
-
     wss.clients.forEach((client) => {
       messageSender(client, availableRooms);
     });
   }
 
   if (type === Action.ADD_USER_TO_ROOM) {
-    //  const userToRoom = JSON.stringify({
-    //    type: Action.ADD_USER_TO_ROOM,
-    //    data: JSON.stringify({
-    //      indexRoom: room.roomId,
-    //    }),
-    //    id: 0,
-    //  });
-    //  messageSender(ws, userToRoom);
+    addUserToRoom(data, currentUserName);
+
+    const availableRooms = getAvailableRooms();
+    wss.clients.forEach((client) => {
+      messageSender(client, availableRooms);
+    });
   }
 
   return;

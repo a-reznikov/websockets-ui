@@ -1,4 +1,4 @@
-import { Room, User, UserWithIndex, Winner } from "./types";
+import { Room, RoomUser, User, UserWithIndex, Winner } from "./types";
 
 export const users: UserWithIndex[] = [];
 export const winners: Winner[] = [];
@@ -44,8 +44,8 @@ export const updateWinner = (userName: string) => {
 };
 
 // Room
-export const getRoomById = (id: string) =>
-  rooms.find(({ roomId }) => roomId === id);
+export const getRoomById = (indexRoom: string) =>
+  rooms.find(({ roomId }) => roomId === indexRoom);
 
 export const getAvailableRooms = () =>
   rooms.filter(({ roomUsers }) => roomUsers.length === 1);
@@ -63,4 +63,29 @@ export const createRoom = (currentUserName: string) => {
   rooms.push(room);
 
   return room;
+};
+
+export const isUserInRoom = (roomUsers: RoomUser[], userName: string) =>
+  roomUsers.some(({ name }) => name === userName);
+
+export const addUserToRoom = (indexRoom: string, currentUserName: string) => {
+  const joinedUser = getUserByName(currentUserName);
+
+  if (joinedUser) {
+    rooms.forEach((room, index) => {
+      if (room.roomId === indexRoom) {
+        if (!isUserInRoom(room.roomUsers, currentUserName)) {
+          rooms[index] = {
+            ...room,
+            roomUsers: [
+              ...room.roomUsers,
+              { name: joinedUser.name, index: joinedUser.index },
+            ],
+          };
+        }
+      }
+    });
+  }
+
+  return joinedUser;
 };

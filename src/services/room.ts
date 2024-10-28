@@ -19,8 +19,10 @@ export const getAvailableRooms = () => {
   });
 };
 
-// export const updateRoom = (roomId: string) => {
-//   const room = db.createRoom(uuid);
+export const addUserToRoom = (data: string, currentUserName: string) => {
+  const { indexRoom }: { indexRoom: string } = JSON.parse(data);
 
-//   return room;
-// };
+  const joinedUser = db.addUserToRoom(indexRoom, currentUserName);
+
+  return joinedUser;
+};
