@@ -1,8 +1,8 @@
 import { db } from "../db";
 import { Action } from "./types";
 
-export const createRoom = (userId: string) => {
-  const room = db.createRoom(userId);
+export const createRoom = (currentUserName: string) => {
+  const room = db.createRoom(currentUserName);
 
   return room;
 };

@@ -48,12 +48,17 @@ export const getRoomById = (id: string) =>
   rooms.find(({ roomId }) => roomId === id);
 
 export const getAvailableRooms = () =>
-  rooms.map(({ roomUsers }) => roomUsers.length === 1);
+  rooms.filter(({ roomUsers }) => roomUsers.length === 1);
 
-export const createRoom = (userId: string) => {
+export const createRoom = (currentUserName: string) => {
   const roomId = global.crypto.randomUUID();
-
   const room: Room = { roomId, roomUsers: [] };
+
+  const roomOwner = getUserByName(currentUserName);
+
+  if (roomOwner) {
+    room.roomUsers.push({ name: roomOwner.name, index: roomOwner.index });
+  }
 
   rooms.push(room);
 

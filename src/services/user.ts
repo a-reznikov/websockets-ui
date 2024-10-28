@@ -1,13 +1,18 @@
-import { User, UserWithIndex, db } from "../db";
+import { User, db } from "../db";
 import { Action } from "./types";
 
-export const signUpUser = (data: string) => {
+export const signUpUser = (
+  data: string,
+  setUserName: (userName: string) => void
+) => {
   const user: User = JSON.parse(data);
 
   const foundedUser = db.getUserByName(user.name);
 
   if (foundedUser) {
     if (foundedUser.password === user.password) {
+      setUserName(foundedUser.name);
+
       return JSON.stringify({
         type: Action.REGISTRATION,
         data: JSON.stringify({
@@ -24,7 +29,7 @@ export const signUpUser = (data: string) => {
       type: Action.REGISTRATION,
       data: JSON.stringify({
         name: user.name,
-        index: 0,
+        index: null,
         error: true,
         errorText: `Wrong password!`,
       }),
@@ -33,6 +38,7 @@ export const signUpUser = (data: string) => {
   }
 
   const createdUser = db.addUser(user);
+  setUserName(createdUser.name);
 
   return JSON.stringify({
     type: Action.REGISTRATION,

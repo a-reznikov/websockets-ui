@@ -24,8 +24,15 @@ export const wss = new WebSocketServer({ port: 3000 });
 console.log(`Start Websocket Server on the 3000 port!`);
 
 wss.on("connection", (ws) => {
-  const userId = global.crypto.randomUUID();
+  let currentUserName = "Guest";
+
+  const setUserName = (userName: string) => {
+    currentUserName = userName;
+  };
+
   ws.on("error", console.error);
 
-  ws.on("message", (message: string) => mainHandler(userId, ws, message));
+  ws.on("message", (message: string) =>
+    mainHandler({ ws, message, currentUserName, setUserName })
+  );
 });
